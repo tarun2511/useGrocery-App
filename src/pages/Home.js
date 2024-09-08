@@ -9,27 +9,42 @@ import pharmacyWEB from "../grocery-img/pharmacyWEB.avif";
 import babycare from "../grocery-img/babycare.avif";
 import print from "../grocery-img/print.avif";
 import CircularProgress from '@mui/material/CircularProgress';
+import { useSelector, useDispatch } from "react-redux";
+import { addProduct } from "../features/cart/cartSlice";
+import {addProducts} from "../features/products/productsSlice";
+import { fetchProducts } from "../features/products/productsSlice";
 
 
 
 export default function Home(){
-
-    const [products, setProducts] = useState([]);   
+    const products = useSelector(state => state.products.products);
     const [isLoading, setIsLoading] = useState(false);
-    
-    const fetchProducts = async() => {
-        try{
-            const fetchedProducts = await axios.get("http://localhost:4200/v1/products/");
-            setProducts(fetchedProducts.data.products)
-        }
-        catch(err){
-            console.log(err)
-        }
-    }
+    const dispatch = useDispatch();
+    const searchFlag = useSelector(state => state.products.searchFlag);
+
+    // const fetchProducts = async() => {
+    //     try{
+    //         const res = await axios.get("http://localhost:4200/v1/products/");
+    //         const fetchedProducts = res.data.products;
+    //         //dispatch(fetchedProducts.data.products)
+    //         dispatch(addProducts({
+    //             fetchedProducts
+    //         }))
+    //     }
+    //     catch(err){
+    //         console.log(err)
+    //     }
+    // }
+
+    const handleFetch = () => {
+        dispatch(fetchProducts()) //action creator
+    } 
+
+    console.log(products);
 
     useEffect(() => {
         setIsLoading(true);
-        fetchProducts();
+        handleFetch();
         setTimeout(() => {
             setIsLoading(false)
         }, 300)
@@ -46,14 +61,34 @@ export default function Home(){
                 <img src={babycare} alt="banner" width="350px" height="200px"/>
             </div>
 
-            {isLoading? <CircularProgress className="loading-icon"/> :
+            {/* {searchFlag? <p>Search</p> : */}
+            {isLoading? <CircularProgress className="loading-icon"/> : 
+            searchFlag? <div className="searched-products">
+                <h1>Search results</h1>
+                <ul>
+                {
+                    products.length > 0? products.map(el => {
+                     return <Paper elevation={2} className="flex-item-home" sx={{width: "200px", height: "277px"}}><Link to={`/product-details/${el._id}`} style={{textDecoration: "none", color: "black"}}><li className="product-list-item">
+                        <img src={el.image? `http://localhost:4200/images/${el.image.data}`: null} 
+                        alt="cover-img" width="170" height="170" style={{borderRadius: "4px"}}></img>
+                        <p> {el.name.length > 30? `${el.name.substring(0,31)}...`: el.name}</p>
+                        <p className="product-list-price">₹{el.sellingPrice}</p>
+                        <p className="og-price">{el.ogPrice}</p>
+                        <p className="discount">{`${Math.round((el.ogPrice-el.sellingPrice) * 100/el.ogPrice)}`}% off</p>
+                        </li> 
+
+                        </Link></Paper>
+                    }) : null
+                }
+                </ul>
+            </div> :
             <div>
             <div className="products-for-u">
             <h4>Products for you</h4>
             <ul className="product-list-container">
-            {products.length > 0? 
+            {
+            products.length > 0? 
                 products.map(el => {
-                    {{console.log(el)}}
                     return <Paper elevation={2} className="flex-item-home" sx={{width: "200px", height: "277px"}}><Link to={`/product-details/${el._id}`} style={{textDecoration: "none", color: "black"}}><li className="product-list-item">
                         <img src={el.image? `http://localhost:4200/images/${el.image.data}`: null} 
                         alt="cover-img" width="170" height="170" style={{borderRadius: "4px"}}></img>
@@ -111,7 +146,7 @@ export default function Home(){
                 </ul>
             </div>
             </div>
-        }
+            }
         </div>
         <Footer/>
        

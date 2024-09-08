@@ -6,6 +6,12 @@ const path = require("path");
 
 router.get("/", async (req, res) => {
     try{
+    const {searchQuery} = req.query;
+    const re = new RegExp(searchQuery, "i");
+    if(searchQuery){
+       const searchedProducts = await Grocery.find({$or: [{name: re}, {category: re}]});
+       return res.status(200).json({"products": searchedProducts, "msg": "success"})
+    }
     const products = await Grocery.find({});
         return res.status(200).json({"products" : products, "msg": "success"})
     }
@@ -28,8 +34,6 @@ router.get("/product-details/:id", async (req, res) => {
 
 router.get("/getCartProducts/:ids", async(req, res) => {
     try{
-        console.log(req.body)
-        console.log(req.params)
         const {ids} = req.params;
         console.log(typeof ids);
         return res.status(200).json({dsad :"dsh"});
@@ -137,6 +141,17 @@ router.post("/login", async(req, res) => {
     }
 })
 
+// router.get("/search", async(req, res) => {
+//     try{
+//     const {searchQuery} = req.query;
+//     const re = new RegExp(searchQuery, "i");
+//     const data = await Grocery.findOne(`${searchQuery}`);
+//     return res.status(200).json({data});
+//     }
+//     catch(err){
+//         return res.status(500).json(err);
+//     }
+// })
 
 const Storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -173,8 +188,6 @@ router.post("/addProduct", upload, (req, res, err) => {
     .then(() => res.status(200).json({msg: "successfully uploaded"}))
     .catch(err => res.status(500).json(err));
 })
-
-
 
 
 

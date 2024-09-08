@@ -21,7 +21,6 @@ export default function Cart(){
             sum = sum + el.price;
             setSubTotal(sum);
         })
-        console.log(sum)
     }, [products])
 
     const deleteProductCart = (index) => {
